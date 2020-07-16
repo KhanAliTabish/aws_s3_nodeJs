@@ -60,10 +60,15 @@ const s3Download = (fileName, res) => {
     file.on('end',  () => {
         const buffer = Buffer.concat(buffers);
         const workbook = xlsx.read(buffer);
+        var fileDataArray = []
+        const sheetNames = workbook.SheetNames
+        sheetNames.map(sheetName => {
+        fileDataArray = fileDataArray.concat(xlsx.utils.sheet_to_json(workbook.Sheets[sheetName] , {raw: true, defval: null}))
+        })
+        console.log(fileDataArray[699],fileDataArray.length)
         const wbout = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer'});
         fs.writeFileSync('./downloaded_sample.xlsx', wbout)
-        res.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.status(200).send({message : 'Success', data: workbook})
+        res.status(200).send({message : 'Success', data: fileDataArray})
     });
 
     file.on('error', (error) => {
